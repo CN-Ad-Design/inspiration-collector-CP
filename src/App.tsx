@@ -21,7 +21,7 @@ function App() {
 
   useEffect(() => {
     // If no Supabase URL is provided, mock the session check to immediately resolve to null (requires login)
-    if (!import.meta.env.VITE_SUPABASE_URL) {
+    if (!import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL === 'https://placeholder.supabase.co') {
       setLoading(false);
       return;
     }

@@ -8,7 +8,7 @@ export default function Header() {
   const { user } = useAuthStore();
 
   const handleLogout = async () => {
-    if (!import.meta.env.VITE_SUPABASE_URL) {
+    if (!import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL === 'https://placeholder.supabase.co') {
       useAuthStore.getState().setUser(null);
       return;
     }

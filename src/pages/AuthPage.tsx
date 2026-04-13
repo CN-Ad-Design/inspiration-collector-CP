@@ -16,7 +16,7 @@ export default function AuthPage() {
     setError(null);
 
     // Mock auth behavior if Supabase env vars are not set
-    if (!import.meta.env.VITE_SUPABASE_URL) {
+    if (!import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL === 'https://placeholder.supabase.co') {
       setTimeout(() => {
         useAuthStore.getState().setUser({ id: 'mock-user-1', email });
         setLoading(false);
