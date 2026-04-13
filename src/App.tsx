@@ -20,8 +20,10 @@ function App() {
   }, [setTheme]);
 
   useEffect(() => {
-    // If no Supabase URL is provided, mock the session check to immediately resolve to null (requires login)
-    if (!import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL === 'https://placeholder.supabase.co') {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    
+    // If no proper Supabase URL is provided, mock the session check to immediately resolve to null
+    if (!supabaseUrl || supabaseUrl === 'https://placeholder.supabase.co' || supabaseUrl.includes('your-project-id')) {
       setLoading(false);
       return;
     }

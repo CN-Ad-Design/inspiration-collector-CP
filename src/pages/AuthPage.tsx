@@ -15,8 +15,11 @@ export default function AuthPage() {
     setLoading(true);
     setError(null);
 
-    // Mock auth behavior if Supabase env vars are not set
-    if (!import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL === 'https://placeholder.supabase.co') {
+    // Get env vars, checking both VITE_ prefixed (Vite/Client) and raw env (sometimes Vercel handles them differently)
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    
+    // Mock auth behavior if Supabase env vars are not set properly
+    if (!supabaseUrl || supabaseUrl === 'https://placeholder.supabase.co' || supabaseUrl.includes('your-project-id')) {
       setTimeout(() => {
         useAuthStore.getState().setUser({ id: 'mock-user-1', email });
         setLoading(false);
