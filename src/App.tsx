@@ -13,7 +13,7 @@ import { Search } from 'lucide-react';
 
 function App() {
   const setTheme = useThemeStore((state) => state.setTheme);
-  const { user, setUser, isLoading, setLoading } = useAuthStore();
+  const { user, setUser, isLoading, setLoading, expiresAt } = useAuthStore();
 
   useEffect(() => {
     setTheme('dark'); // Force dark theme as default
@@ -24,6 +24,10 @@ function App() {
     
     // If no proper Supabase URL is provided, mock the session check to immediately resolve to null
     if (!supabaseUrl || supabaseUrl === 'https://placeholder.supabase.co' || supabaseUrl.includes('your-project-id')) {
+      // Check if session has expired
+      if (user && expiresAt && Date.now() > expiresAt) {
+        setUser(null);
+      }
       setLoading(false);
       return;
     }

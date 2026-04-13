@@ -7,6 +7,7 @@ export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -15,13 +16,18 @@ export default function AuthPage() {
     setLoading(true);
     setError(null);
 
+    // Calculate expiration time
+    // Default session: 2 hours. Remember me: 15 days
+    const expiresInMs = rememberMe ? 15 * 24 * 60 * 60 * 1000 : 2 * 60 * 60 * 1000;
+    const expiresAt = Date.now() + expiresInMs;
+
     // Get env vars, checking both VITE_ prefixed (Vite/Client) and raw env (sometimes Vercel handles them differently)
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     
     // Mock auth behavior if Supabase env vars are not set properly
     if (!supabaseUrl || supabaseUrl === 'https://placeholder.supabase.co' || supabaseUrl.includes('your-project-id')) {
       setTimeout(() => {
-        useAuthStore.getState().setUser({ id: 'mock-user-1', email });
+        useAuthStore.getState().setUser({ id: 'mock-user-1', email }, expiresAt);
         setLoading(false);
       }, 1000);
       return;
@@ -105,6 +111,27 @@ export default function AuthPage() {
                 placeholder="••••••"
               />
             </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-2">
+            <label className="flex items-center space-x-2 cursor-pointer group">
+              <div className="relative flex items-center">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="peer sr-only"
+                />
+                <div className="w-4 h-4 border border-white/30 rounded bg-black/40 peer-checked:bg-[#9c39ff] peer-checked:border-[#9c39ff] transition-colors flex items-center justify-center">
+                  <svg className="w-3 h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+              </div>
+              <span className="text-sm text-white/50 group-hover:text-white/80 transition-colors select-none">
+                15天内免登录
+              </span>
+            </label>
           </div>
 
           <button
