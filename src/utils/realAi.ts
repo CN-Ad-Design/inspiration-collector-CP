@@ -36,9 +36,10 @@ export const analyzeImage = async (filename: string, width?: number, height?: nu
     1. ocr_text (string): 提取图片中所有可见的文字。如果没有文字请返回空字符串 ""。
     2. semantic_description (string): 提供一段非常详细的画面视觉和语义描述（例如：“一个穿着赛博朋克风格发光夹克的女孩站在下雨的霓虹灯街道上，充满科技感”）。这段描述将作为用户的底层隐形搜索词。
     3. color_tone (string): 只能从以下选项中选一个: "红", "橙", "黄", "绿", "蓝", "紫", "黑白"。
-    4. style (string): 只能从以下选项中选一个或最接近的: "极简主义", "玻璃拟态", "扁平化", "拟物化", "赛博朋克", "复古"。如果都不符合，选一个最接近的。
-    5. function_type (string): 只能从以下选项中选一个: "登录页", "横幅", "图标", "插画", "界面组件", "配色方案"。如果都不是，选"插画"。
-    6. tags (array): 一个数组，每个元素包含 tag_type (只能是 "device" 或 "context") 和 tag_value (具体的标签名，如"手机", "网页设计", "手表")，以及 confidence (0-1的小数)。
+    4. extracted_colors (array): 提取画面中5个最核心的主题颜色的 HEX 十六进制代码，返回一个字符串数组（例如 ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#00FFFF"]）。
+    5. style (string): 只能从以下选项中选一个或最接近的: "极简主义", "玻璃拟态", "扁平化", "拟物化", "赛博朋克", "复古"。如果都不符合，选一个最接近的。
+    6. function_type (string): 只能从以下选项中选一个: "网页设计", "登录页", "横幅", "图标", "插画", "界面组件", "配色方案", "背景图", "摄影图"。注意：如果图片只是纯粹的颜色渐变、模糊背景或没有实质内容的底图，必须选"背景图"或"配色方案"！绝对不能选"网页设计"！
+    7. tags (array): 一个数组，每个元素包含 tag_type (只能是 "device" 或 "context") 和 tag_value (具体的标签名，如"科技", "极简", "渐变", "UI")，以及 confidence (0-1的小数)。
 
     不要返回任何 markdown 标记（如 \`\`\`json ），直接返回纯 JSON 字符串！
     `;
@@ -98,7 +99,9 @@ export const analyzeImage = async (filename: string, width?: number, height?: nu
     // 将 AI 结果整合成我们应用需要的格式
     return {
       color_tone: aiData.color_tone || '黑白',
-      extracted_colors: ['#FFFFFF', '#CCCCCC', '#999999', '#666666', '#000000'], // 可选：这里也可以用原本的本地 Canvas 取色
+      extracted_colors: Array.isArray(aiData.extracted_colors) && aiData.extracted_colors.length > 0 
+                        ? aiData.extracted_colors 
+                        : ['#FFFFFF', '#CCCCCC', '#999999', '#666666', '#000000'],
       style: aiData.style || '极简主义',
       function_type: aiData.function_type || '插画',
       ocr_text: aiData.ocr_text || '',

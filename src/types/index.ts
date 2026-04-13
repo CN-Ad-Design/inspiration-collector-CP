@@ -11,7 +11,7 @@ export interface User {
 
 export type ColorTone = '红' | '橙' | '黄' | '绿' | '蓝' | '紫' | '黑白';
 export type StyleType = '极简主义' | '玻璃拟态' | '扁平化' | '拟物化' | '赛博朋克' | '复古';
-export type FunctionType = '登录页' | '横幅' | '图标' | '插画' | '界面组件' | '配色方案';
+export type FunctionType = '登录页' | '横幅' | '图标' | '插画' | '界面组件' | '配色方案' | '网页设计' | '背景图' | '摄影图';
 
 export interface ImageTag {
   id: string;
