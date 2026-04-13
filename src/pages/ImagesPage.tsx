@@ -166,9 +166,9 @@ export default function ImagesPage() {
   };
 
   const getDisplayTags = (img: ImageItem) => {
-    // Collect tags from custom tags and AI tags
+    // Collect tags from custom tags and relevant AI tags (exclude color, style, function)
     const allTags = [
-      ...(img.tags?.map(t => translateTag(t.tag_value)) || []),
+      ...(img.tags?.filter(t => t.tag_type !== 'color' && t.tag_type !== 'style' && t.tag_type !== 'function').map(t => translateTag(t.tag_value)) || []),
       ...(img.custom_tags || [])
     ].filter(Boolean);
     
@@ -176,7 +176,7 @@ export default function ImagesPage() {
     return Array.from(new Set(allTags)).slice(0, 3);
   };
 
-  const tabs = ['全部', '标签', '名称', '功能', '风格', '色系', '尺寸'];
+  const tabs = ['全部', '内容标签', '名称', '功能', '风格', '色系', '尺寸'];
 
   // Legacy English to Chinese mapping for old indexedDB data
   const legacyTranslationMap: Record<string, string> = {
@@ -362,11 +362,29 @@ export default function ImagesPage() {
           const prefix = img.filename.length >= 3 ? img.filename.substring(0, 3) : (/[A-Z]/.test(firstChar) ? firstChar : '#');
           keys = [prefix];
           break;
-        case '标签':
+        case '内容标签':
           if (img.tags && img.tags.length > 0) {
-            keys = img.tags.map(t => translateTag(t.tag_value));
+            // Only group by specific tag types (e.g., 'device', 'context')
+            // Ignore color, style, and function since they have their own tabs
+            const relevantTags = img.tags
+              .filter(t => t.tag_type !== 'color' && t.tag_type !== 'style' && t.tag_type !== 'function')
+              .map(t => translateTag(t.tag_value));
+            
+            // Also include custom_tags in the grouping
+            if (img.custom_tags && img.custom_tags.length > 0) {
+              relevantTags.push(...img.custom_tags);
+            }
+            
+            if (relevantTags.length > 0) {
+              keys = relevantTags;
+            } else {
+              // Exclude from '内容标签' tab if it has no relevant tags or custom tags
+              keys = [];
+            }
+          } else if (img.custom_tags && img.custom_tags.length > 0) {
+            keys = [...img.custom_tags];
           } else {
-            keys = ['未标签'];
+            keys = [];
           }
           break;
         case '色系':
@@ -673,7 +691,7 @@ export default function ImagesPage() {
                                 setEditingField({ id: img.id, field: 'tags' });
                                 // When editing, we want to show all tags joined by comma so user can edit the full list
                                 const allTagsString = Array.from(new Set([
-                                  ...(img.tags?.map(t => translateTag(t.tag_value)) || []),
+                                  ...(img.tags?.filter(t => t.tag_type !== 'color' && t.tag_type !== 'style' && t.tag_type !== 'function').map(t => translateTag(t.tag_value)) || []),
                                   ...(img.custom_tags || [])
                                 ].filter(Boolean))).join(', ');
                                 setEditValue(allTagsString);
@@ -1024,7 +1042,7 @@ export default function ImagesPage() {
                                   setEditingField({ id: img.id, field: 'tags' });
                                   // When editing, we want to show all tags joined by comma so user can edit the full list
                                   const allTagsString = Array.from(new Set([
-                                    ...(img.tags?.map(t => translateTag(t.tag_value)) || []),
+                                    ...(img.tags?.filter(t => t.tag_type !== 'color' && t.tag_type !== 'style' && t.tag_type !== 'function').map(t => translateTag(t.tag_value)) || []),
                                     ...(img.custom_tags || [])
                                   ].filter(Boolean))).join(', ');
                                   setEditValue(allTagsString);
