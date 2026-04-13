@@ -310,31 +310,18 @@ export default function ImagesPage() {
       if (normalizedFilename && normalizedFilename.includes(normalizedQ)) return true;
 
       // Semantic Enrichment Simulation for Mock AI
-      // In a real app, this would be handled by a CLIP-like vector database embedding search.
       // Since we only have static mock keywords for existing images, we dynamically expand 
       // visual traits (like aspect ratio and implicit contexts) into natural language terms.
       const getSemanticExpansion = (image: ImageItem) => {
         const traits = [];
         // Aspect ratio heuristic mapping
         if (image.aspect_ratio === '竖图') {
-          traits.push('手机', 'app', '移动端', '竖屏', '界面', 'ui');
+          traits.push('竖屏', '长图');
         } else if (image.aspect_ratio === '横图') {
-          traits.push('电脑', 'pc', '网页', '横屏', '桌面端', '网站', '摄影', '展示');
+          traits.push('横屏', '宽图');
         } else {
-          traits.push('社交', '卡片', '方图', '头像', '图标');
+          traits.push('方图');
         }
-
-        // Deterministic pseudo-random object detection based on ID hash
-        const hash = image.id.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
-        if (hash % 3 === 0) traits.push('手', '人', '拿', '握', '使用', '手持');
-        if (hash % 5 === 0) traits.push('手表', '智能穿戴', '手腕', 'watch');
-        if (hash % 7 === 0) traits.push('平板', 'ipad', '横版');
-
-        // File name & OCR hints
-        const textHint = (image.filename + ' ' + (image.ocr_text || '')).toLowerCase();
-        if (textHint.includes('watch') || textHint.includes('表')) traits.push('手表', '智能穿戴');
-        if (textHint.includes('phone') || textHint.includes('机')) traits.push('手机', '智能手机');
-        if (textHint.includes('mockup') || textHint.includes('样机')) traits.push('样机', '展示', '透视');
 
         return traits.join(' ');
       };
