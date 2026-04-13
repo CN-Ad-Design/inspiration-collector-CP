@@ -176,7 +176,7 @@ export default function ImagesPage() {
     return Array.from(new Set(allTags)).slice(0, 3);
   };
 
-  const tabs = ['全部', '内容标签', '名称', '功能', '风格', '色系', '尺寸'];
+  const tabs = ['全部', '标签', '名称', '功能', '风格', '色系', '尺寸'];
 
   // Legacy English to Chinese mapping for old indexedDB data
   const legacyTranslationMap: Record<string, string> = {
@@ -362,7 +362,7 @@ export default function ImagesPage() {
           const prefix = img.filename.length >= 3 ? img.filename.substring(0, 3) : (/[A-Z]/.test(firstChar) ? firstChar : '#');
           keys = [prefix];
           break;
-        case '内容标签':
+        case '标签':
           if (img.tags && img.tags.length > 0) {
             // Only group by specific tag types (e.g., 'device', 'context')
             // Ignore color, style, and function since they have their own tabs
@@ -378,7 +378,7 @@ export default function ImagesPage() {
             if (relevantTags.length > 0) {
               keys = relevantTags;
             } else {
-              // Exclude from '内容标签' tab if it has no relevant tags or custom tags
+              // Exclude from '标签' tab if it has no relevant tags or custom tags
               keys = [];
             }
           } else if (img.custom_tags && img.custom_tags.length > 0) {

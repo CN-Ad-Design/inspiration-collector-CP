@@ -21,6 +21,37 @@ export default function ImageModal({ image, onClose, onFindSimilar }: ImageModal
   
   const [showFigmaParams, setShowFigmaParams] = useState(false);
 
+  const legacyTranslationMap: Record<string, string> = {
+    'desktop': '电脑',
+    'laptop': '笔记本电脑',
+    'mobile': '手机',
+    'smartphone': '智能手机',
+    'tablet': '平板',
+    'watch': '手表',
+    'minimalist': '极简主义',
+    'glassmorphism': '玻璃拟态',
+    'flat': '扁平化',
+    'skeuomorphism': '拟物化',
+    'cyberpunk': '赛博朋克',
+    'retro': '复古',
+    'web': '网页设计',
+    'landing': '登录页',
+    'banner': '横幅',
+    'icon': '图标',
+    'illustration': '插画',
+    'ui': '界面组件',
+    'color-scheme': '配色方案',
+    'red': '红',
+    'orange': '橙',
+    'yellow': '黄',
+    'green': '绿',
+    'blue': '蓝',
+    'purple': '紫',
+    'monochrome': '黑白'
+  };
+
+  const translateTag = (val: string) => legacyTranslationMap[val?.toLowerCase?.()] || val;
+
   const handleSaveName = () => {
     updateImage(currentImage.id, { filename });
     setIsEditing(false);
@@ -274,8 +305,11 @@ export default function ImageModal({ image, onClose, onFindSimilar }: ImageModal
               </div>
               <div className="flex flex-wrap gap-2 mb-3">
                 {/* AI Tags */}
-                {currentImage.tags?.map((tag, idx) => (
-                  editingTagIndex?.index === idx && editingTagIndex.isAi ? (
+                {currentImage.tags?.map((tag, idx) => {
+                  if (tag.tag_type === 'color' || tag.tag_type === 'style' || tag.tag_type === 'function') {
+                    return null;
+                  }
+                  return editingTagIndex?.index === idx && editingTagIndex.isAi ? (
                     <input 
                       key={`ai-edit-${idx}`}
                       autoFocus
@@ -293,12 +327,12 @@ export default function ImageModal({ image, onClose, onFindSimilar }: ImageModal
                       key={`ai-${idx}`} 
                       onClick={() => {
                         setEditingTagIndex({ index: idx, isAi: true, originalValue: tag.tag_value });
-                        setEditTagValue(tag.tag_value);
+                        setEditTagValue(translateTag(tag.tag_value));
                       }}
                       className="px-2 py-1 bg-[#9c39ff]/10 hover:bg-[#9c39ff]/20 text-[#c9a7fe] rounded text-xs flex items-center border border-[#9c39ff]/30 cursor-text group/tag transition-colors"
                     >
                       <span className="mr-1 text-[10px]">⭐️</span>
-                      {tag.tag_value}
+                      {translateTag(tag.tag_value)}
                       <button 
                         onClick={(e) => {
                           e.stopPropagation();
@@ -310,8 +344,8 @@ export default function ImageModal({ image, onClose, onFindSimilar }: ImageModal
                         <X className="w-3 h-3" />
                       </button>
                     </span>
-                  )
-                ))}
+                  );
+                })}
 
                 {/* Custom Tags */}
                 {currentImage.custom_tags?.filter(tag => !currentImage.tags?.some(aiTag => aiTag.tag_value === tag)).map((tag, idx) => (
@@ -366,8 +400,11 @@ export default function ImageModal({ image, onClose, onFindSimilar }: ImageModal
               <div className="mt-3">
                 <div className="text-xs text-white/30 mb-2">已有标签</div>
                 <div className="flex flex-wrap gap-2">
-                  {Array.from(new Set(images.flatMap(img => img.custom_tags || [])))
-                    .filter(t => !currentImage.custom_tags?.includes(t))
+                  {Array.from(new Set(images.flatMap(img => [
+                      ...(img.custom_tags || []),
+                      ...(img.tags?.filter(t => t.tag_type !== 'color' && t.tag_type !== 'style' && t.tag_type !== 'function').map(t => translateTag(t.tag_value)) || [])
+                    ])))
+                    .filter(t => !currentImage.custom_tags?.includes(t) && !currentImage.tags?.some(aiTag => translateTag(aiTag.tag_value) === t))
                     .map(tag => (
                       <button 
                         key={tag}
