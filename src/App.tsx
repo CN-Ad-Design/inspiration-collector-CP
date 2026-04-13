@@ -24,8 +24,9 @@ function App() {
     
     // If no proper Supabase URL is provided, mock the session check to immediately resolve to null
     if (!supabaseUrl || supabaseUrl === 'https://placeholder.supabase.co' || supabaseUrl.includes('your-project-id')) {
-      // Check if session has expired
-      if (user && expiresAt && Date.now() > expiresAt) {
+      // Check if session has expired using the latest state
+      const state = useAuthStore.getState();
+      if (state.user && state.expiresAt && Date.now() > state.expiresAt) {
         setUser(null);
       }
       setLoading(false);
