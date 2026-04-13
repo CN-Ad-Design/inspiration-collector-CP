@@ -339,8 +339,9 @@ export default function ImagesPage() {
         getSemanticExpansion(img) // Include dynamically inferred semantic traits
       ].filter(Boolean).join(' ').toLowerCase();
 
-      // If there are search terms, check if AT LEAST ONE matches to provide a fuzzy "Vibe" search
-      return searchTerms.some(term => {
+      // If there are search terms, check if ALL terms match to provide an accurate "AND" search
+      // (This prevents a search for "手机" from matching images that just have "手" or unrelated tags)
+      return searchTerms.every(term => {
         const normalizedTerm = term.replace('蝉吗妈', '蝉妈妈');
         return textToSearch.includes(normalizedTerm);
       });
