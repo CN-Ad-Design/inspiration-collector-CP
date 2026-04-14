@@ -131,7 +131,7 @@ export const extractFigmaParams = async (dataUrl: string): Promise<string> => {
 
   if (!apiKey || !dataUrl) {
     // Mock return if no AI
-    return `/* 模拟 Figma/CSS 参数 */\nbackground: linear-gradient(180deg, #fbf4ffe5 0%, #fcedffe5 100%);\nbackdrop-filter: blur(10px);\nborder-radius: 20px;\nbox-shadow:\n 0px -3px 10px 0px #00000005,\n 0px 5px 10px 0px #00000008;\noutline: 1px solid #ea9eff;`;
+    return `/* 提取失败，请检查模型 API 密钥配置 */\nbackground: linear-gradient(180deg, #fbf4ffe5 0%, #fcedffe5 100%);\nborder-radius: 12px;`;
   }
 
   try {
@@ -188,6 +188,6 @@ export const extractFigmaParams = async (dataUrl: string): Promise<string> => {
     return content;
   } catch (error) {
     console.error('Figma param extraction failed:', error);
-    return `/* 提取失败，返回模拟参数 */\nbackground: linear-gradient(180deg, #fbf4ffe5 0%, #fcedffe5 100%);\nborder-radius: 12px;`;
+    return `/* 提取失败，请检查网络或稍后重试 */\nbackground: linear-gradient(180deg, #fbf4ffe5 0%, #fcedffe5 100%);\nborder-radius: 12px;`;
   }
 };
