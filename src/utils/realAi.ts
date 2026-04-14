@@ -120,3 +120,74 @@ export const analyzeImage = async (filename: string, width?: number, height?: nu
     return fallbackMockAiAnalyzeImage(filename, width, height, dataUrl);
   }
 };
+
+/**
+ * Extract Figma/CSS parameters from a specific cropped area of an image.
+ */
+export const extractFigmaParams = async (dataUrl: string): Promise<string> => {
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+  const baseUrl = import.meta.env.VITE_OPENAI_BASE_URL || 'https://api.openai.com/v1';
+  const modelName = import.meta.env.VITE_OPENAI_MODEL || 'gpt-4o';
+
+  if (!apiKey || !dataUrl) {
+    // Mock return if no AI
+    return `/* 模拟 Figma/CSS 参数 */\nbackground: linear-gradient(180deg, #fbf4ffe5 0%, #fcedffe5 100%);\nbackdrop-filter: blur(10px);\nborder-radius: 20px;\nbox-shadow:\n 0px -3px 10px 0px #00000005,\n 0px 5px 10px 0px #00000008;\noutline: 1px solid #ea9eff;`;
+  }
+
+  try {
+    const prompt = `
+    你是一个专业的前端工程师和UI设计师。
+    请仔细观察这张图片中包含的UI元素（这可能是一个被框选出来的局部截图）。
+    请尝试还原这个元素的 CSS 样式代码（如 background, border-radius, box-shadow, backdrop-filter, color, font-size 等等）。
+    
+    要求：
+    1. 只返回 CSS 属性的键值对，不需要返回选择器或包裹的大括号。
+    2. 每行一个属性，以分号结尾。
+    3. 尽量猜测渐变色、阴影和圆角的精确值。
+    4. 不要使用 markdown 代码块，直接返回纯文本。
+    `;
+
+    const response = await fetch(`${baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: modelName,
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: prompt },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: dataUrl,
+                },
+              },
+            ],
+          },
+        ],
+        max_tokens: 500,
+        temperature: 0.1,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('API Request Failed');
+    }
+
+    const result = await response.json();
+    let content = result.choices[0].message.content.trim();
+    if (content.startsWith('```css')) {
+      content = content.replace(/^```css/, '').replace(/```$/, '').trim();
+    } else if (content.startsWith('```')) {
+      content = content.replace(/^```/, '').replace(/```$/, '').trim();
+    }
+    return content;
+  } catch (error) {
+    console.error('Figma param extraction failed:', error);
+    return `/* 提取失败，返回模拟参数 */\nbackground: linear-gradient(180deg, #fbf4ffe5 0%, #fcedffe5 100%);\nborder-radius: 12px;`;
+  }
+};

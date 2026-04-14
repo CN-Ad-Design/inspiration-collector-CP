@@ -1,7 +1,8 @@
-import { X, Tag, Download, Trash2, Edit2, Check, Copy, Palette, Wand2, Search } from 'lucide-react';
+import { X, Tag, Download, Trash2, Edit2, Check, Copy, Palette, Wand2, Search, Loader2 } from 'lucide-react';
 import { ImageItem } from '../types';
 import { useImageStore } from '../store/useImageStore';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { extractFigmaParams } from '../utils/realAi';
 
 interface ImageModalProps {
   image: ImageItem;
@@ -20,6 +21,91 @@ export default function ImageModal({ image, onClose, onFindSimilar }: ImageModal
   const [editTagValue, setEditTagValue] = useState('');
   
   const [showFigmaParams, setShowFigmaParams] = useState(false);
+  const [isCropping, setIsCropping] = useState(false);
+  const [cropStart, setCropStart] = useState<{ x: number, y: number } | null>(null);
+  const [cropEnd, setCropEnd] = useState<{ x: number, y: number } | null>(null);
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [figmaResult, setFigmaResult] = useState<string | null>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+
+  const handleStartCropping = () => {
+    if (isCropping) {
+      // Cancel cropping
+      setIsCropping(false);
+      setShowFigmaParams(false);
+      setCropStart(null);
+      setCropEnd(null);
+    } else {
+      setShowFigmaParams(true);
+      setIsCropping(true);
+      setCropStart(null);
+      setCropEnd(null);
+      setFigmaResult(null);
+    }
+  };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!isCropping || !imageRef.current) return;
+    const rect = imageRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    setCropStart({ x, y });
+    setCropEnd({ x, y });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isCropping || !cropStart || !imageRef.current) return;
+    const rect = imageRef.current.getBoundingClientRect();
+    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+    const y = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
+    setCropEnd({ x, y });
+  };
+
+  const handleMouseUp = () => {
+    if (!isCropping || !cropStart) return;
+    // Done drawing
+  };
+
+  const handleConfirmCrop = async () => {
+    if (!cropStart || !cropEnd || !imageRef.current) return;
+    setIsCropping(false);
+    setIsExtracting(true);
+
+    try {
+      const rect = imageRef.current.getBoundingClientRect();
+      const naturalWidth = imageRef.current.naturalWidth;
+      const naturalHeight = imageRef.current.naturalHeight;
+
+      const scaleX = naturalWidth / rect.width;
+      const scaleY = naturalHeight / rect.height;
+
+      const x1 = Math.min(cropStart.x, cropEnd.x) * scaleX;
+      const y1 = Math.min(cropStart.y, cropEnd.y) * scaleY;
+      const w = Math.abs(cropEnd.x - cropStart.x) * scaleX;
+      const h = Math.abs(cropEnd.y - cropStart.y) * scaleY;
+
+      // Draw cropped area to canvas
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(
+          imageRef.current,
+          x1, y1, w, h,
+          0, 0, w, h
+        );
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+        const result = await extractFigmaParams(dataUrl);
+        setFigmaResult(result);
+      }
+    } catch (error) {
+      console.error('Extraction failed:', error);
+      setFigmaResult('/* 提取失败，请重试 */');
+    } finally {
+      setIsExtracting(false);
+    }
+  };
 
   const legacyTranslationMap: Record<string, string> = {
     'desktop': '电脑',
@@ -193,16 +279,48 @@ export default function ImageModal({ image, onClose, onFindSimilar }: ImageModal
       </div>
 
       <div className="max-w-6xl w-full h-full flex flex-col md:flex-row gap-6 items-center justify-center">
-        <div className="flex-1 flex items-center justify-center min-h-[50vh]">
+        <div className="flex-1 flex items-center justify-center min-h-[50vh] relative select-none">
           <img 
+            ref={imageRef}
             src={currentImage.storage_path} 
             alt={currentImage.filename}
-            className="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl cursor-context-menu"
+            className={`max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl ${isCropping ? 'cursor-crosshair' : 'cursor-context-menu'}`}
             onContextMenu={(e) => {
+              if (isCropping) { e.preventDefault(); return; }
               e.preventDefault();
               setContextMenu({ x: e.clientX, y: e.clientY });
             }}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            draggable={false}
           />
+          {isCropping && cropStart && cropEnd && (
+            <div 
+              className="absolute border-2 border-[#9c39ff] bg-[#9c39ff]/20 pointer-events-none"
+              style={{
+                left: imageRef.current ? imageRef.current.offsetLeft + Math.min(cropStart.x, cropEnd.x) : 0,
+                top: imageRef.current ? imageRef.current.offsetTop + Math.min(cropStart.y, cropEnd.y) : 0,
+                width: Math.abs(cropEnd.x - cropStart.x),
+                height: Math.abs(cropEnd.y - cropStart.y)
+              }}
+            >
+              <button
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={handleConfirmCrop}
+                className="absolute -bottom-10 right-0 px-3 py-1 bg-[#9c39ff] text-white rounded text-xs shadow pointer-events-auto hover:bg-[#862be0] transition-colors flex items-center"
+              >
+                <Check className="w-3 h-3 mr-1" />
+                提取
+              </button>
+            </div>
+          )}
+          {isCropping && !cropStart && (
+            <div className="absolute top-4 bg-black/60 text-white/90 px-4 py-2 rounded-full text-sm backdrop-blur-md border border-white/10 shadow-xl animate-pulse pointer-events-none">
+              请在图片上拖拽框选需要提取效果的区域
+            </div>
+          )}
         </div>
         
         <div className="w-full md:w-80 bg-[#1D1E24] border border-white/10 rounded-xl p-6 shadow-xl flex flex-col shrink-0 text-white overflow-y-auto max-h-[85vh]">
@@ -266,20 +384,42 @@ export default function ImageModal({ image, onClose, onFindSimilar }: ImageModal
             {/* Effect Extraction Section */}
             <div>
               <button 
-                onClick={() => setShowFigmaParams(!showFigmaParams)}
-                className="w-full flex items-center justify-center py-2 px-4 bg-[#9c39ff]/20 hover:bg-[#9c39ff]/30 text-[#9c39ff] rounded-lg text-sm font-medium transition-colors border border-[#9c39ff]/30"
+                onClick={handleStartCropping}
+                className={`w-full flex items-center justify-center py-2 px-4 rounded-lg text-sm font-medium transition-colors border ${
+                  isCropping 
+                    ? 'bg-red-500/20 text-red-400 border-red-500/30 hover:bg-red-500/30' 
+                    : 'bg-[#9c39ff]/20 hover:bg-[#9c39ff]/30 text-[#9c39ff] border-[#9c39ff]/30'
+                }`}
               >
-                <Wand2 className="w-4 h-4 mr-2" />
-                效果提取 (Figma参数)
+                {isCropping ? <X className="w-4 h-4 mr-2" /> : <Wand2 className="w-4 h-4 mr-2" />}
+                {isCropping ? '取消框选' : '局部效果提取 (Figma/CSS)'}
               </button>
               
               {showFigmaParams && (
-                <div className="mt-3 p-3 bg-black/40 rounded-lg border border-white/5 text-xs font-mono text-white/80 space-y-2">
-                  <p><span className="text-[#9c39ff]">background:</span> linear-gradient(180deg, #fbf4ffe5 0%, #fcedffe5 100%);</p>
-                  <p><span className="text-[#9c39ff]">backdrop-filter:</span> blur(10px);</p>
-                  <p><span className="text-[#9c39ff]">border-radius:</span> 20px;</p>
-                  <p><span className="text-[#9c39ff]">box-shadow:</span><br/> 0px -3px 10px 0px #00000005,<br/> 0px 5px 10px 0px #00000008;</p>
-                  <p><span className="text-[#9c39ff]">outline:</span> 1px solid #ea9eff;</p>
+                <div className="mt-3 p-3 bg-black/40 rounded-lg border border-white/5 text-xs font-mono text-white/80 space-y-2 relative min-h-[100px] overflow-hidden">
+                  {isExtracting ? (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-[#9c39ff] bg-[#1D1E24]/80 backdrop-blur-sm z-10">
+                      <Loader2 className="w-6 h-6 animate-spin mb-2" />
+                      <span>AI 正在提取样式...</span>
+                    </div>
+                  ) : figmaResult ? (
+                    <div className="relative group">
+                      <button 
+                        onClick={() => handleCopyColor(figmaResult)}
+                        className="absolute top-0 right-0 p-1.5 bg-white/10 hover:bg-white/20 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="复制全部代码"
+                      >
+                        <Copy className="w-3 h-3 text-white" />
+                      </button>
+                      <pre className="whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-[#c9a7fe]">
+                        {figmaResult}
+                      </pre>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center h-full min-h-[80px] text-white/40">
+                      请在左侧图片中框选区域...
+                    </div>
+                  )}
                 </div>
               )}
             </div>
