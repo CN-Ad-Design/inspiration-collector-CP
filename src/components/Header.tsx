@@ -19,7 +19,7 @@ export default function Header() {
   return (
     <header className="h-14 bg-[#ffffff]/[0.06] shadow-sm flex items-center justify-between px-6 shrink-0 z-10">
       <div className="flex items-center space-x-2 w-1/3">
-        <img src="/logo.png" alt="灵感收集器" className="w-5 h-5 object-contain" onError={(e) => {
+        <img src="https://m.syqhy.cn/w/67aca9e663da59ec2176461a/24d9c490a6e7498c83a5cd5f308a0d44.png" alt="灵感收集器" className="w-6 h-6 object-contain" onError={(e) => {
           // Fallback to old icon if image is missing
           (e.target as HTMLImageElement).style.display = 'none';
           (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');

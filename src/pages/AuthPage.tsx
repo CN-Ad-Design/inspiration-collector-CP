@@ -68,7 +68,7 @@ export default function AuthPage() {
         <div className="flex justify-center mb-8">
           <div className="w-12 h-12 bg-gradient-to-br from-[#9c39ff] to-[#4f46e5] rounded-xl flex items-center justify-center shadow-lg shadow-[#9c39ff]/20 overflow-hidden relative">
             <img 
-              src="/logo.png" 
+              src="https://m.syqhy.cn/w/67aca9e663da59ec2176461a/24d9c490a6e7498c83a5cd5f308a0d44.png" 
               alt="Logo" 
               className="w-10 h-10 object-contain z-10" 
               onError={(e) => {
