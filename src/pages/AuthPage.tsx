@@ -66,8 +66,17 @@ export default function AuthPage() {
 
       <div className="w-full max-w-md z-10 p-8 bg-[#1D1E24]/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
         <div className="flex justify-center mb-8">
-          <div className="w-12 h-12 bg-gradient-to-br from-[#9c39ff] to-[#4f46e5] rounded-xl flex items-center justify-center shadow-lg shadow-[#9c39ff]/20">
-            <Zap className="w-6 h-6 text-white fill-white" />
+          <div className="w-12 h-12 bg-gradient-to-br from-[#9c39ff] to-[#4f46e5] rounded-xl flex items-center justify-center shadow-lg shadow-[#9c39ff]/20 overflow-hidden relative">
+            <img 
+              src="/logo.png" 
+              alt="Logo" 
+              className="w-10 h-10 object-contain z-10" 
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+                (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+              }} 
+            />
+            <Zap className="w-6 h-6 text-white fill-white absolute hidden z-0" />
           </div>
         </div>
 
