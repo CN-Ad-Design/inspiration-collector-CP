@@ -1,58 +1,73 @@
-# React + TypeScript + Vite
+# 灵感收集器 · Inspiration Collector
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> AI 驱动的视觉灵感素材管理工具
 
-Currently, two official plugins are available:
+🎯 **立即访问：https://inspiration-collector.xyz**
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## 项目简介
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+灵感收集器是一款基于 AI 的视觉素材管理工具，帮助设计师、创意工作者快速收集、整理和提取网页中的视觉灵感。
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+### 核心功能
+
+- 📸 **图片收藏**：一键保存喜欢的视觉图片和配色方案
+- 🏷️ **智能标签**：自动为每张图片生成内容标签，方便分类检索
+- 🔍 **关键词搜索**：通过标签和描述快速找到灵感素材
+- 👩‍🎨 **多账号支持**：每人独立的素材库，数据互不干扰
+- 🎨 **设计参数提取**：框选图片区域，AI 自动生成 CSS/Figma 设计参数
+
+---
+
+## 技术栈
+
+| 模块 | 技术 |
+|---|---|
+| 前端框架 | React + TypeScript + Vite |
+| 状态管理 | Zustand |
+| 路由 | React Router |
+| 样式 | Tailwind CSS |
+| AI 服务 | GLM-4V-Flash |
+| 部署平台 | Vercel |
+
+---
+
+## 本地开发
+
+```bash
+# 安装依赖
+npm install
+
+# 启动开发服务器
+npm run dev
+
+# 构建生产版本
+npm run build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 部署流程
 
-export default tseslint.config({
-  extends: [
-    // other configs...
-    // Enable lint rules for React
-    reactX.configs['recommended-typescript'],
-    // Enable lint rules for React DOM
-    reactDom.configs.recommended,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+本项目通过 Vercel 自动部署：
+
+1. 代码推送到 GitHub 仓库的 `main` 分支
+2. Vercel 自动检测到变更，触发新一轮构建
+3. 几分钟后，新版本自动上线到 https://inspiration-collector.xyz
+
+```bash
+# 推送代码即触发部署
+git push origin main
 ```
-  
+
+---
+
+## 仓库信息
+
+- **GitHub 仓库**：https://github.com/CN-Ad-Design/inspiration-collector-CP
+- **所属组织**：[CN-Ad-Design](https://github.com/CN-Ad-Design)
+
+---
+
+© CN-Ad-Design Team
