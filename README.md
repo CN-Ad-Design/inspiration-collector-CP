@@ -17,6 +17,8 @@
 - 🔍 **关键词搜索**：通过标签和描述快速找到灵感素材
 - 👩‍🎨 **多账号支持**：每人独立的素材库，数据互不干扰
 - 🎨 **设计参数提取**：框选图片区域，AI 自动生成 CSS/Figma 设计参数
+- <img width="2192" height="1650" alt="image" src="https://github.com/user-attachments/assets/5bf7ba09-ee41-442d-8c56-f919dddf9090" />
+
 
 ---
 
